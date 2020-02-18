@@ -1,0 +1,61 @@
+body {
+  font-family: 'Open Sans', sans-serif;
+  text-align: center;
+  font-weight: bold;
+}
+
+h1 {
+  font-size: 10rem;
+  font-weight: 600;
+}
+
+.btn {
+	box-shadow:inset 0px 1px 3px 0px #91b8b3;
+	background:linear-gradient(to bottom, #768d87 5%, #6c7c7c 100%);
+	background-color:#768d87;
+	border-radius:5px;
+	border:1px solid #566963;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff;
+	font-weight:bold;
+  margin: 5px 0px 5px 0px;
+	padding:5px 31px;
+	text-decoration:none;
+	text-shadow:0px -1px 0px #2b665e;
+}
+.btn:hover {
+	background:linear-gradient(to bottom, #6c7c7c 5%, #768d87 100%);
+	background-color:#6c7c7c;
+}
+.btn:active {
+	position:relative;
+	top:1px;
+}
+
+
+.myscore {
+  font-size: 10rem;
+  font-weight: 600;
+}
+
+.home-score {
+  background-color: #0f4c75;
+}
+
+.away-score {
+  background-color: #3282b8;
+}
+
+.num-subscore {
+  font-size: 5rem;
+  font-weight: 600;
+}
+
+.adv-score {
+  background-color: #ffcc00;
+}
+
+.pen-score {
+  background-color: #fa163f;
+}
