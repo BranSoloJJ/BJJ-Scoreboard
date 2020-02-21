@@ -1,5 +1,80 @@
 //jshint esversion:6
 
+var timeInMinutes = 5;
+var currentTime = Date.parse(new Date()); // returns date in ms as since 1970
+var deadline = Date.parse(currentTime + (timeInMinutes*60*1000)); //currentTime + timer
+
+function timeRemaining(endtime){
+  var t = Date.parse(endtime) - Date.parse(new Date()); // t= the difference between the deadline and current time
+  var seconds = Math.floor ((t/1000) % 60);
+  var minutes = Math.floor ((t/1000/60) % 60);
+  var hours = Math.floor ((t/(1000*60*60) % 24));
+  var days = Math.floor (t/(1000*60*60*24));
+
+  return {
+    'total':t,
+    'days': days,
+    'hours': hours,
+    'minutes': minutes,
+    'seconds': seconds};
+    }
+
+var timeInterval;
+
+function runClock(id, endtime) {
+  var clock = document.getElementById(id);
+
+  function updateClock(){
+    var t = timeRemaining(endtime);
+    clock.innerHTML = t.minutes + ":" + t.seconds;
+    if (t.total<=0) {clearInterval(timeInterval);}
+  }
+  timeInterval = setInterval (updateClock, 1000);
+
+}
+
+// runClock('time', deadline);
+
+var paused = true;
+var timeLeft; // time left on the clock when paused
+
+function pauseClock(){
+  if(!paused){
+    paused = true;
+    clearInterval(timeInterval); //stop the clock by clearing the interval
+    timeLeft = timeRemaining(deadline).total;
+  }
+}
+
+function resumeClock (){
+  if(paused){
+    paused = false;
+
+    deadline = new Date(Date.parse(new Date()) + timeLeft);
+
+    runClock('time', deadline);
+  }
+}
+
+function clockInit(){
+  var startBtn = document.querySelector('#start-btn');
+  startBtn.addEventListener('click', function(){
+    if (paused){
+      resumeClock();
+      console.log("start");
+      console.log(timeInMinutes);
+      console.log(currentTime);
+      console.log(deadline);
+    } else if (!paused) {
+      pauseClock();
+      console.log("pause");
+    }
+  }
+);
+}
+
+clockInit();
+
 const scoreBoard = {
   _round: 0,
   _home: 0,
@@ -41,7 +116,7 @@ const scoreBoard = {
     // destructure max and min
     const [min, max] = this.range;
     // set getter to underscore value for accessing object
-    const getter = `_${value}`;
+    const getter = `_${value}`; //template literal string
     if (operator === '+' && (this[getter] + step) - 1 < max) {
       // if operator is add and the incrementation wont exceede max increment by step
       this[value] = this[getter] + step;
