@@ -1,0 +1,106 @@
+[1mdiff --git a/index.html b/index.html[m
+[1mindex 995efa0..1140894 100644[m
+[1m--- a/index.html[m
+[1m+++ b/index.html[m
+[36m@@ -22,6 +22,7 @@[m
+       <h1 id='time'>05:00</h1>[m
+     </div>[m
+     <button type="button" name="button" class='btn' id='start-btn'>Start</button>[m
+[32m+[m[32m    <button type="button" name="button" class='btn'>Restart</button>[m
+   </section>[m
+ [m
+   <section class="scoreboard row">[m
+[1mdiff --git a/scoreboard.js b/scoreboard.js[m
+[1mindex d7127dd..f5e0706 100644[m
+[1m--- a/scoreboard.js[m
+[1m+++ b/scoreboard.js[m
+[36m@@ -1,5 +1,80 @@[m
+ //jshint esversion:6[m
+ [m
+[32m+[m[32mvar timeInMinutes = 5;[m
+[32m+[m[32mvar currentTime = Date.parse(new Date()); // returns date in ms as since 1970[m
+[32m+[m[32mvar deadline = Date.parse(currentTime + (timeInMinutes*60*1000)); //currentTime + timer[m
+[32m+[m
+[32m+[m[32mfunction timeRemaining(endtime){[m
+[32m+[m[32m  var t = Date.parse(endtime) - Date.parse(new Date()); // t= the difference between the deadline and current time[m
+[32m+[m[32m  var seconds = Math.floor ((t/1000) % 60);[m
+[32m+[m[32m  var minutes = Math.floor ((t/1000/60) % 60);[m
+[32m+[m[32m  var hours = Math.floor ((t/(1000*60*60) % 24));[m
+[32m+[m[32m  var days = Math.floor (t/(1000*60*60*24));[m
+[32m+[m
+[32m+[m[32m  return {[m
+[32m+[m[32m    'total':t,[m
+[32m+[m[32m    'days': days,[m
+[32m+[m[32m    'hours': hours,[m
+[32m+[m[32m    'minutes': minutes,[m
+[32m+[m[32m    'seconds': seconds};[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32mvar timeInterval;[m
+[32m+[m
+[32m+[m[32mfunction runClock(id, endtime) {[m
+[32m+[m[32m  var clock = document.getElementById(id);[m
+[32m+[m
+[32m+[m[32m  function updateClock(){[m
+[32m+[m[32m    var t = timeRemaining(endtime);[m
+[32m+[m[32m    clock.innerHTML = t.minutes + ":" + t.seconds;[m
+[32m+[m[32m    if (t.total<=0) {clearInterval(timeInterval);}[m
+[32m+[m[32m  }[m
+[32m+[m[32m  timeInterval = setInterval (updateClock, 1000);[m
+[32m+[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m// runClock('time', deadline);[m
+[32m+[m
+[32m+[m[32mvar paused = true;[m
+[32m+[m[32mvar timeLeft; // time left on the clock when paused[m
+[32m+[m
+[32m+[m[32mfunction pauseClock(){[m
+[32m+[m[32m  if(!paused){[m
+[32m+[m[32m    paused = true;[m
+[32m+[m[32m    clearInterval(timeInterval); //stop the clock by clearing the interval[m
+[32m+[m[32m    timeLeft = timeRemaining(deadline).total;[m
+[32m+[m[32m  }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mfunction resumeClock (){[m
+[32m+[m[32m  if(paused){[m
+[32m+[m[32m    paused = false;[m
+[32m+[m
+[32m+[m[32m    deadline = new Date(Date.parse(new Date()) + timeLeft);[m
+[32m+[m
+[32m+[m[32m    runClock('time', deadline);[m
+[32m+[m[32m  }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mfunction clockInit(){[m
+[32m+[m[32m  var startBtn = document.querySelector('#start-btn');[m
+[32m+[m[32m  startBtn.addEventListener('click', function(){[m
+[32m+[m[32m    if (paused){[m
+[32m+[m[32m      resumeClock();[m
+[32m+[m[32m      console.log("start");[m
+[32m+[m[32m      console.log(timeInMinutes);[m
+[32m+[m[32m      console.log(currentTime);[m
+[32m+[m[32m      console.log(deadline);[m
+[32m+[m[32m    } else if (!paused) {[m
+[32m+[m[32m      pauseClock();[m
+[32m+[m[32m      console.log("pause");[m
+[32m+[m[32m    }[m
+[32m+[m[32m  }[m
+[32m+[m[32m);[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mclockInit();[m
+[32m+[m
+ const scoreBoard = {[m
+   _round: 0,[m
+   _home: 0,[m
+[36m@@ -41,7 +116,7 @@[m [mconst scoreBoard = {[m
+     // destructure max and min[m
+     const [min, max] = this.range;[m
+     // set getter to underscore value for accessing object[m
+[31m-    const getter = `_${value}`;[m
+[32m+[m[32m    const getter = `_${value}`; //template literal string[m
+     if (operator === '+' && (this[getter] + step) - 1 < max) {[m
+       // if operator is add and the incrementation wont exceede max increment by step[m
+       this[value] = this[getter] + step;[m

@@ -1,79 +1,74 @@
-//jshint esversion:6
 
-var timeInMinutes = 5;
-var currentTime = Date.parse(new Date()); // returns date in ms as since 1970
-var deadline = Date.parse(currentTime + (timeInMinutes*60*1000)); //currentTime + timer
+// 10 minutes from now
+var time_in_minutes = 5;
+var current_time = Date.parse(new Date()); //this instant
+var deadline = new Date(current_time + time_in_minutes*60*1000); //sum of this instant plus however far away the deadline is
 
-function timeRemaining(endtime){
-  var t = Date.parse(endtime) - Date.parse(new Date()); // t= the difference between the deadline and current time
-  var seconds = Math.floor ((t/1000) % 60);
-  var minutes = Math.floor ((t/1000/60) % 60);
-  var hours = Math.floor ((t/(1000*60*60) % 24));
-  var days = Math.floor (t/(1000*60*60*24));
 
-  return {
-    'total':t,
-    'days': days,
-    'hours': hours,
-    'minutes': minutes,
-    'seconds': seconds};
-    }
-
-var timeInterval;
-
-function runClock(id, endtime) {
-  var clock = document.getElementById(id);
-
-  function updateClock(){
-    var t = timeRemaining(endtime);
-    clock.innerHTML = t.minutes + ":" + t.seconds;
-    if (t.total<=0) {clearInterval(timeInterval);}
-  }
-  timeInterval = setInterval (updateClock, 1000);
-
+function time_remaining(endtime){
+	var t = Date.parse(endtime) - Date.parse(new Date()); //difference between the deadline and this instant
+	var seconds = Math.floor( (t/1000) % 60 );
+	var minutes = Math.floor( (t/1000/60) % 60 );
+	var hours = Math.floor( (t/(1000*60*60)) % 24 );
+	var days = Math.floor( t/(1000*60*60*24) );
+	return {'total':t, 'days':days, 'hours':hours, 'minutes':minutes, 'seconds':seconds};
 }
 
-// runClock('time', deadline);
+var timeinterval; //var holding the 1s interval for the countdown
 
-var paused = true;
-var timeLeft; // time left on the clock when paused
+function run_clock(id,endtime){
 
-function pauseClock(){
-  if(!paused){
-    paused = true;
-    clearInterval(timeInterval); //stop the clock by clearing the interval
-    timeLeft = timeRemaining(deadline).total;
-  }
+	var clock = document.getElementById(id);
+
+  function update_clock(){
+		var t = time_remaining(endtime); //var to hold time_remaining, eventually passing in deadline as the param
+		clock.innerHTML = t.minutes+':'+t.seconds; //change the display with the minutes and seconds of time_remaining
+		if(t.total<=0){ clearInterval(timeinterval); } //if t.total equals or is less than 0, clear the interval so it stops counting down
+	}
+	update_clock(); // run function once at first to avoid delay
+	timeinterval = setInterval(update_clock,1000); //set var timeinterval to 1s, passing in update_clock. i.e., update clock runs every 1s
 }
 
-function resumeClock (){
-  if(paused){
-    paused = false;
 
-    deadline = new Date(Date.parse(new Date()) + timeLeft);
+run_clock('time',deadline);
+ // on load, starts the clock
+ // if I remove this, set interval will start, but update clock will not run
+ //only when I pause, and then start again, does the timer show the correct time
 
-    runClock('time', deadline);
-  }
+var paused = false; // is the clock paused?
+var time_left; // time left on the clock when paused
+
+
+function pause_clock(){
+	if(!paused){ //if paused is not true (i.e. it is running),
+		paused = true; //set pause status to equal true
+		clearInterval(timeinterval); // stop the clock by clearing the timeinterval
+		time_left = time_remaining(deadline).total; // preserve remaining time using the total of timeRemaining
+	}
 }
 
-function clockInit(){
-  var startBtn = document.querySelector('#start-btn');
-  startBtn.addEventListener('click', function(){
-    if (paused){
-      resumeClock();
-      console.log("start");
-      console.log(timeInMinutes);
-      console.log(currentTime);
-      console.log(deadline);
-    } else if (!paused) {
-      pauseClock();
-      console.log("pause");
-    }
-  }
-);
+function resume_clock(){
+	if(paused){ //if paused is true (ie. it is not running)
+		paused = false; //set pause status to equal false
+
+		// update the deadline to preserve the amount of time remaining
+		deadline = new Date(Date.parse(new Date()) + time_left); //create new Date passing in the value of the current time plus the time left on the clock at that instant
+    //right now if i use this to start the clock, time_left doesnt exist until I pause it
+
+		// start the clock
+		run_clock('time',deadline); //passing in the id of the clock display and the deadline
+    console.log(deadline);
+	}
 }
 
-clockInit();
+// handle pause and resume button clicks
+document.getElementById('pause-btn').onclick = pause_clock;
+document.getElementById('start-btn').onclick = resume_clock;
+
+
+
+
+
 
 const scoreBoard = {
   _round: 0,
@@ -155,6 +150,13 @@ function init() {
 }
 
 init();
+
+function restart() {
+  const res = document.querySelector('.restart-btn');
+  res.addEventListener('click', function(){
+    this._home = 0;
+  });
+}
 
 // OLD CODE
 
