@@ -1,70 +1,124 @@
+//jshint esversion:6
 
-// 10 minutes from now
-var time_in_minutes = 5;
-var current_time = Date.parse(new Date()); //this instant
-var deadline = new Date(current_time + time_in_minutes*60*1000); //sum of this instant plus however far away the deadline is
+class Countdown {
+  constructor() {
+    this.duration = 0; //this.whatever makes it a constructor function
+    this.elapsed = 0;
+    this.isActive = false;
+    this.lastFrameTime = Date.now();
+    this.minutes = 0;
+    this.seconds = 0;
+
+    this.onTick = () => {}; //arrow function. same meaning as Countdown.onTick = function(){}
+    // right now this is empty. will be filled with a function to replace the label
+
+    this.onCompleted = () => {};
+
+    this.tick(); //reminder: this represents the object that is executing the current function when it is inside a method of an object. i.e. constructor.tick
+  }
 
 
-function time_remaining(endtime){
-	var t = Date.parse(endtime) - Date.parse(new Date()); //difference between the deadline and this instant
-	var seconds = Math.floor( (t/1000) % 60 );
-	var minutes = Math.floor( (t/1000/60) % 60 );
-	var hours = Math.floor( (t/(1000*60*60)) % 24 );
-	var days = Math.floor( t/(1000*60*60*24) );
-	return {'total':t, 'days':days, 'hours':hours, 'minutes':minutes, 'seconds':seconds};
+  getTimeLeft() { //the timeleft is the difference between the total duration and the time that has elapsed. this syntax meaks getTimeLeft is a method being added to the Countdown class
+    // adding a method to a constructor (countdown)
+
+    const t = this.duration - this.elapsed; //const t is the difference between the total duration and the elapsed time (i.e. 300seconds minus however long the clock has been running)
+    // since getTimeLeft
+    this.minutes = Math.floor((t / 60) % 60);
+    this.seconds = Math.floor(t % 60);
+
+    return Math.max(0, t); //returns the largest number between 0 and the difference. i.e. will never be a negative.
+
+  }
+
+  pause() {
+    this.isActive = false; //changes active status to false
+
+    return this; //returns the object that this belongs too. Allows you to chain methods together. i.e. Countdown.pause
+  }
+
+  reset() {
+    this.isActive = false;
+    this.elapsed = 0; //sets elapsed time to equal 0
+  }
+
+  setDuration(seconds) {
+    this.lastFrameTime = Date.now();
+    this.duration = seconds;
+
+    return this;
+  }
+
+  start() {
+    this.isActive = true;
+
+    return this;
+  }
+
+  tick() { //function that is executed when clock is running
+    const currentFrameTime = Date.now();
+    const deltaTime = currentFrameTime - this.lastFrameTime; //the change in time equals the difference between the current time and the last timeframe
+    this.lastFrameTime = currentFrameTime; //while ticking, this.lastFrameTime and currentFrameTime are the same
+
+    if (this.isActive) { //if the clock is running
+      this.elapsed += deltaTime / 1000; //constructor.elapsed = the change in time.
+      //x +=y -> x = x + y.
+      //elapsed time equals elapsed time plus the change in time.
+
+      this.onTick(this.getTimeLeft()); //call onTick, calls getTimeLeft to return the timeleft (t)
+      // this.getTimeLeft will be time later on
+
+      if (this.getTimeLeft() <= 0) { //if the timer is 0
+        this.pause(); //pause the clock
+        this.onCompleted(); //clears onTick function ?
+      }
+    }
+
+    window.requestAnimationFrame(this.tick.bind(this)); //bind sets the value of this regardless of how its called
+    // The window.requestAnimationFrame() method tells the browser that you wish to perform an animation
+    // and requests that the browser calls a specified function to update an animation before the next repaint.
+    //The method takes a callback as an argument to be invoked before the repaint.
+    // i.e. calls this.tick before the next 'repaint'
+    //The number of callbacks is usually 60 times per second
+    //ensures that this is bound to the this inside of tick
+
+  }
 }
 
-var timeinterval; //var holding the 1s interval for the countdown
+const countdown = new Countdown().setDuration(300);
+//create a new countdown object
 
-function run_clock(id,endtime){
+const label = document.querySelector('#time');
 
-	var clock = document.getElementById(id);
+document.querySelector('#pause-btn').addEventListener('click', () => {
+  countdown.pause(); //add pause function to pause button
+});
 
-  function update_clock(){
-		var t = time_remaining(endtime); //var to hold time_remaining, eventually passing in deadline as the param
-		clock.innerHTML = t.minutes+':'+t.seconds; //change the display with the minutes and seconds of time_remaining
-		if(t.total<=0){ clearInterval(timeinterval); } //if t.total equals or is less than 0, clear the interval so it stops counting down
-	}
-	update_clock(); // run function once at first to avoid delay
-	timeinterval = setInterval(update_clock,1000); //set var timeinterval to 1s, passing in update_clock. i.e., update clock runs every 1s
-}
+document.querySelector('#reset-btn').addEventListener('click', () => {
+  countdown.reset(); //add reset function to reset button
+  label.innerHTML = '05:00'; //Math.ciel rounds up to nearest whole number. change the label to the timeLeft
+});
 
+document.querySelector('#start-btn').addEventListener('click', () => {
+  countdown.start(); //add start function to start button
+});
 
-run_clock('time',deadline);
- // on load, starts the clock
- // if I remove this, set interval will start, but update clock will not run
- //only when I pause, and then start again, does the timer show the correct time
+countdown.onTick = (time) => { //coundown.onTick function (time) {...}
 
-var paused = false; // is the clock paused?
-var time_left; // time left on the clock when paused
+  minutes = countdown.minutes < 10 ? "0" + countdown.minutes : countdown.minutes;
+  seconds = countdown.seconds < 10 ? "0" + countdown.seconds : countdown.seconds;
 
+  if (countdown.minutes && countdown.seconds < 0) {
+    label.innerHTML = "Match Over";
+  } else {
+    label.innerHTML = minutes + ':' + seconds;
+    // Math.round(time); //while ticking, change the label to represent the time
+    // //time is getTimeLeft()
+  }
+};
 
-function pause_clock(){
-	if(!paused){ //if paused is not true (i.e. it is running),
-		paused = true; //set pause status to equal true
-		clearInterval(timeinterval); // stop the clock by clearing the timeinterval
-		time_left = time_remaining(deadline).total; // preserve remaining time using the total of timeRemaining
-	}
-}
-
-function resume_clock(){
-	if(paused){ //if paused is true (ie. it is not running)
-		paused = false; //set pause status to equal false
-
-		// update the deadline to preserve the amount of time remaining
-		deadline = new Date(Date.parse(new Date()) + time_left); //create new Date passing in the value of the current time plus the time left on the clock at that instant
-    //right now if i use this to start the clock, time_left doesnt exist until I pause it
-
-		// start the clock
-		run_clock('time',deadline); //passing in the id of the clock display and the deadline
-    console.log(deadline);
-	}
-}
-
-// handle pause and resume button clicks
-document.getElementById('pause-btn').onclick = pause_clock;
-document.getElementById('start-btn').onclick = resume_clock;
-
+countdown.onCompleted = () => {
+  console.log('DONE');
+};
 
 
 
@@ -151,12 +205,9 @@ function init() {
 
 init();
 
-function restart() {
-  const res = document.querySelector('.restart-btn');
-  res.addEventListener('click', function(){
-    this._home = 0;
-  });
-}
+
+
+
 
 // OLD CODE
 
