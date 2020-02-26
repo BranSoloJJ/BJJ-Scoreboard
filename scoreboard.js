@@ -88,6 +88,7 @@ const countdown = new Countdown().setDuration(300);
 //create a new countdown object
 
 const label = document.querySelector('#time');
+const scoreLabel = document.querySelectorAll('.score');
 
 document.querySelector('#pause-btn').addEventListener('click', () => {
   countdown.pause(); //add pause function to pause button
@@ -96,6 +97,17 @@ document.querySelector('#pause-btn').addEventListener('click', () => {
 document.querySelector('#reset-btn').addEventListener('click', () => {
   countdown.reset(); //add reset function to reset button
   label.innerHTML = '05:00'; //Math.ciel rounds up to nearest whole number. change the label to the timeLeft
+
+	for (var i = 0; i <scoreLabel.length; i++) {
+		scoreLabel[i].innerHTML = "0";
+	}
+
+	scoreBoard._home = 0;
+	scoreBoard._away = 0;
+	scoreBoard._homeadv = 0;
+	scoreBoard._homepen = 0;
+	scoreBoard._awayadv = 0;
+	scoreBoard._awaypen = 0;
 });
 
 document.querySelector('#start-btn').addEventListener('click', () => {
