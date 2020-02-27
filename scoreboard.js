@@ -98,6 +98,7 @@ document.querySelector('#reset-btn').addEventListener('click', () => {
   countdown.reset(); //add reset function to reset button
   label.innerHTML = '05:00'; //Math.ciel rounds up to nearest whole number. change the label to the timeLeft
 
+//for loop to update all scores to 0 when reset button is clicked
 	for (var i = 0; i <scoreLabel.length; i++) {
 		scoreLabel[i].innerHTML = "0";
 	}
@@ -137,6 +138,8 @@ countdown.onCompleted = () => {
 
 
 const scoreBoard = {
+
+//point holders
   _round: 0,
   _home: 0,
   _homeadv: 0,
@@ -145,6 +148,8 @@ const scoreBoard = {
   _awayadv: 0,
   _awaypen: 0,
   range: [0, 99],
+
+	//update point holders and text content
   set home(val) {
     this._home = val;
     document.querySelector('#home-score').textContent = this._home;
@@ -173,11 +178,14 @@ const scoreBoard = {
     this._round = val;
     document.querySelector('#roundnum').textContent = this._round;
   },
+
+//method to increment or decrement points
   checkRangeAndUpdate(value, operator, step) {
     // destructure max and min
     const [min, max] = this.range;
     // set getter to underscore value for accessing object
     const getter = `_${value}`; //template literal string
+
     if (operator === '+' && (this[getter] + step) - 1 < max) {
       // if operator is add and the incrementation wont exceede max increment by step
       this[value] = this[getter] + step;
@@ -187,6 +195,8 @@ const scoreBoard = {
       this[value] = this[getter] - step;
     }
   },
+
+	
   homep4: ['home', '+', 4],
   homep3: ['home', '+', 3],
   homep2: ['home', '+', 2],
@@ -207,6 +217,7 @@ const scoreBoard = {
   roundminus: ['round', '-', 1]
 };
 
+//function to initialize checkRangeAndUpdate on button click
 function init() {
   const container = document.querySelector('.scoreboard');
   container.addEventListener('click', function(e) {
@@ -215,6 +226,7 @@ function init() {
   });
 }
 
+//initialize function
 init();
 
 
